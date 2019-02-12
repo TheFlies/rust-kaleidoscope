@@ -57,8 +57,8 @@ impl <'a> Parser<'a> {
         Parser::from_lexer(Lexer::new(source))
     }
 
-    pub fn from_lexer(mut lex: Lexer<'a>) -> Parser<'a> {
-        let current = lex.next();
+    pub fn from_lexer(mut lexer: Lexer<'a>) -> Parser<'a> {
+        let current = lexer.next();
         Parser {
             lexer,
             current,
