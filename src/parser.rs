@@ -60,8 +60,8 @@ impl <'a> Parser<'a> {
     pub fn from_lexer(mut lex: Lexer<'a>) -> Parser<'a> {
         let current = lex.next();
         Parser {
-            lexer: lex,
-            current: current,
+            lexer,
+            current,
         }
     }
     fn get_next_token(&mut self) {
@@ -86,13 +86,14 @@ impl <'a> Parser<'a> {
         }
     }
     fn parse_identifier_expr(&mut self) -> Result<Box<Expr>, String> {
-
         let id = if let Some(Token::Identifier(ref s)) = self.current {
             s.clone()
         } else {
             return Err(format!("Expected identifier, found {:?}", self.current))
         };
+
         self.get_next_token();
+        // We need check next token to know that the identifier is Variable or Function call.
         if Some(Token::UnknownChar('(')) == self.current {
             self.get_next_token();
             let mut args = Vec::new();
@@ -106,17 +107,17 @@ impl <'a> Parser<'a> {
                 }
                 self.get_next_token();
             }
+            // Eat the ')'
             self.get_next_token();
             Ok(Box::new(Expr::Call {
                 name: id,
-                args: args,
+                args,
             }))
         } else {
             Ok(Box::new(Expr::Variable(id.clone())))
         }
     }
     fn parse_primary(&mut self) -> Result<Box<Expr>, String> {
-
         match self.current {
             Some(Token::Identifier(_)) => self.parse_identifier_expr(),
             Some(Token::Number(_)) => self.parse_number(),
@@ -148,13 +149,12 @@ impl <'a> Parser<'a> {
             };
             match next_prec {
                 Some(n) if tok_prec < n => rhs = self.parse_bin_op_rhs(tok_prec + 1, rhs)?,
-                //None => rhs = self.parse_bin_op_rhs(tok_prec + 1, rhs)?,
                 _ => (),
             };
             lhs = Box::new(Expr::Binary {
-                op: op,
-                lhs: lhs,
-                rhs: rhs,
+                op,
+                lhs,
+                rhs,
             });
         }
     }
